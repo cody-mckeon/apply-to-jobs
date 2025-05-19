@@ -43,6 +43,11 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
         context = browser.new_context(**context_args)
         page = context.new_page()
 
+        # Navigate and wait for content
+        page.goto(linkedin_url, timeout=60000, wait_until='domcontentloaded')
+        # Ensure the job list container is present
+        page.wait_for_selector('ul.jobs-search__results-list', timeout=60000)
+
         page.goto(linkedin_url)
         page.wait_for_load_state('networkidle')
 
