@@ -32,7 +32,7 @@ def init_db(db_path):
 def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
     jobs = []
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=headless)
+        browser = p.chromium.launch(headless=false)
         context_args = {}
         if cookies_path and os.path.exists(cookies_path):
             context_args['storage_state'] = cookies_path
