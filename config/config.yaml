@@ -1,1 +1,15 @@
+## config/config.yaml
+
+# Path to the SQLite database
+# (default: data/applied_jobs.db)
+db_path: "data/applied_jobs.db"
+
+# Your bookmarked LinkedIn "last hour" jobs URL
+# e.g. change "r86400" → "r3600" in the Jobs search filters
+# Make sure to URL‑encode spaces (%20) and other characters as needed
+linkedin_url: "https://www.linkedin.com/jobs/search/?f_TPR=r3600&keywords=data%20scientist&location=United%20States"
+
+# Where to save/load your LinkedIn session cookies
+# (created after your first manual login)
+cookies_path: "config/linkedin_cookies.json"
 
