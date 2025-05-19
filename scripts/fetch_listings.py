@@ -36,6 +36,10 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
         context_args = {}
         if cookies_path and os.path.exists(cookies_path):
             context_args['storage_state'] = cookies_path
+        
+        print("▶ Loading cookies from:", cookies_path)
+        print("▶ Cookies file size:", os.path.getsize(cookies_path) if os.path.exists(cookies_path) else "MISSING")
+
         context = browser.new_context(**context_args)
         page = context.new_page()
 
