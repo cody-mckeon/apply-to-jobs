@@ -46,7 +46,10 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
         print("▶ Page URL:", page.url)
         page.screenshot(path="debug.png", full_page=True)
 
-
+        # Scroll to bottom to trigger lazy-loading
+        page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+        page.wait_for_timeout(2000)
+        
         # Select job cards from the search results list
         cards = page.query_selector_all("ul.jobs-search__results-list li.jobs-search-results__list-item")
         print(f"▶ Found {len(cards)} job cards on the page")
