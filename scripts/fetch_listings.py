@@ -44,6 +44,7 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
 
         print("▶ Page title:", page.title())
         print("▶ Page URL:", page.url)
+        page.screenshot(path="debug.png", full_page=True)
 
 
         cards = page.query_selector_all(".job-card-container--clickable")
