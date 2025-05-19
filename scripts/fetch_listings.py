@@ -47,26 +47,34 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
         page.screenshot(path="debug.png", full_page=True)
 
 
-        cards = page.query_selector_all(".job-card-container--clickable")
+        # Select job cards from the search results list
+        cards = page.query_selector_all("ul.jobs-search__results-list li.jobs-search-results__list-item")
+        print(f"▶ Found {len(cards)} job cards on the page")
+
         for card in cards:
-            title_el = card.query_selector("a.job-card-list__title")
-            comp_el = card.query_selector("h4.job-card-container__company-name") or card.query_selector("span.job-card-container__primary-description")
-            loc_el = card.query_selector("li.job-card-container__metadata-item")
-            link = title_el.get_attribute('href')
+            title_el = card.query_selector("h3.base-search-card__title")
+            comp_el = card.query_selector("h4.base-search-card__subtitle")
+            loc_el = card.query_selector("span.job-search-card__location")
+            link_el = card.query_selector("a.base-card__full-link")
+            link = link_el.get_attribute('href') if link_el else None
+
+            if not title_el or not link:
+                continue
 
             jobs.append({
                 'title': title_el.inner_text().strip(),
                 'company': comp_el.inner_text().strip() if comp_el else '',
                 'location': loc_el.inner_text().strip() if loc_el else '',
-                'link': f"https://www.linkedin.com{link}" if link else ''
+                'link': link,
             })
 
-        # Save cookies for future runs
+        # Persist cookies (if login state updated)
         if cookies_path:
             context.storage_state(path=cookies_path)
 
         browser.close()
     return jobs
+
 
 def save_jobs_to_db(jobs, db_path):
     conn = sqlite3.connect(db_path)
