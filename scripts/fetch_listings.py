@@ -42,6 +42,10 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
         page.goto(linkedin_url)
         page.wait_for_load_state('networkidle')
 
+        print("▶ Page title:", page.title())
+        print("▶ Page URL:", page.url)
+
+
         cards = page.query_selector_all(".job-card-container--clickable")
         for card in cards:
             title_el = card.query_selector("a.job-card-list__title")
