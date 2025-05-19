@@ -32,14 +32,13 @@ def init_db(db_path):
 def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
     jobs = []
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        # Launch Browser
+        browser = p.chromium.launch(headless=headless)
+
+        # Load stored session
         context_args = {}
         if cookies_path and os.path.exists(cookies_path):
             context_args['storage_state'] = cookies_path
-        
-        print("▶ Loading cookies from:", cookies_path)
-        print("▶ Cookies file size:", os.path.getsize(cookies_path) if os.path.exists(cookies_path) else "MISSING")
-
         context = browser.new_context(**context_args)
         page = context.new_page()
 
@@ -60,30 +59,36 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
         cards = page.query_selector_all('li[data-occludable-job-id]')
         print(f"▶ Found {len(cards)} job cards on the page")
 
+        jobs = []
         for card in cards:
-            # Extract title, company, location, and link
-            title_el = card.query_selector('h3')
-            comp_el = card.query_selector('h4')
-            loc_el = card.query_selector("span[class*='location']")
-            link_el = card.query_selector("a[href*='/jobs/view/']")
-            link = link_el.get_attribute('href') if link_el else None
+            link_el  = card.query_selector('a.base-card__full-link')
+            title_el = card.query_selector('h3.base-search-card__title')
+            comp_el  = card.query_selector('h4.base-search-card__subtitle')
+            loc_el   = card.query_selector('span.job-search-card__location')
 
-            if not title_el or not link:
+            if not link_el or not title_el:
                 continue
 
+            link     = link_el.get_attribute('href').strip()
+            title    = title_el.inner_text().strip()
+            company  = comp_el.inner_text().strip() if comp_el else ''
+            location = loc_el.inner_text().strip() if loc_el else ''
+
             jobs.append({
-                'title': title_el.inner_text().strip(),
-                'company': comp_el.inner_text().strip() if comp_el else '',
-                'location': loc_el.inner_text().strip() if loc_el else '',
-                'link': link,
+                'title':    title,
+                'company':  company,
+                'location': location,
+                'link':     link
             })
+
+        print(f"▶ Extracted {len(jobs)} jobs after parsing")
 
         # Persist updated session state
         if cookies_path:
             context.storage_state(path=cookies_path)
-
         browser.close()
-    return jobs
+
+        return jobs
 
 def save_jobs_to_db(jobs, db_path):
     conn = sqlite3.connect(db_path)
