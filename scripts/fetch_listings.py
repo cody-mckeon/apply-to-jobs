@@ -46,10 +46,7 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
         # Navigate and wait for content
         page.goto(linkedin_url, timeout=60000, wait_until='domcontentloaded')
         # Ensure the job list container is present
-        page.wait_for_selector('ul.jobs-search__results-list', timeout=60000)
-
-        page.goto(linkedin_url)
-        page.wait_for_load_state('networkidle')
+        page.wait_for_selector('li[data-occludable-job-id]', timeout=60000)
 
         print("▶ Page title:", page.title())
         print("▶ Page URL:", page.url)
@@ -59,15 +56,16 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
         page.wait_for_timeout(2000)
         
-        # Select job cards from the search results list
-        cards = page.query_selector_all("ul.jobs-search__results-list li.jobs-search-results__list-item")
+        # Select each job card by its data attribute
+        cards = page.query_selector_all('li[data-occludable-job-id]')
         print(f"▶ Found {len(cards)} job cards on the page")
 
         for card in cards:
-            title_el = card.query_selector("h3.base-search-card__title")
-            comp_el = card.query_selector("h4.base-search-card__subtitle")
-            loc_el = card.query_selector("span.job-search-card__location")
-            link_el = card.query_selector("a.base-card__full-link")
+            # Extract title, company, location, and link
+            title_el = card.query_selector('h3')
+            comp_el = card.query_selector('h4')
+            loc_el = card.query_selector("span[class*='location']")
+            link_el = card.query_selector("a[href*='/jobs/view/']")
             link = link_el.get_attribute('href') if link_el else None
 
             if not title_el or not link:
@@ -80,13 +78,12 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
                 'link': link,
             })
 
-        # Persist cookies (if login state updated)
+        # Persist updated session state
         if cookies_path:
             context.storage_state(path=cookies_path)
 
         browser.close()
     return jobs
-
 
 def save_jobs_to_db(jobs, db_path):
     conn = sqlite3.connect(db_path)
