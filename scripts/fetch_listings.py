@@ -50,6 +50,10 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
         print("▶ Page title:", page.title())
         print("▶ Page URL:", page.url)
         page.screenshot(path="debug.png", full_page=True)
+        # Save full page HTML for inspection
+        with open("debug.html", "w", encoding="utf-8") as f:
+            f.write(page.content())
+
 
         # Scroll to bottom to trigger lazy-loading
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
