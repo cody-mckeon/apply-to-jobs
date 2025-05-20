@@ -63,41 +63,39 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
         cards = page.query_selector_all('li[data-occludable-job-id]')
         print(f"▶ Found {len(cards)} job cards on the page")
 
-        # Debug: print inner HTML of first few cards to inspect DOM
-        for idx, card in enumerate(cards[:3]):
-            html_snippet = card.inner_html()[:500]
-            print(f"▶ Debug Card {idx} HTML snippet (first 500 chars):\n{html_snippet}\n")
-
         jobs = []
         for card in cards:
-            link_el  = card.query_selector('a.base-card__full-link')
-            title_el = card.query_selector('h3.base-search-card__title')
-            comp_el  = card.query_selector('h4.base-search-card__subtitle')
-            loc_el   = card.query_selector('span.job-search-card__location')
-
-            if not link_el or not title_el:
+            link_el = card.query_selector('a.job-card-container__link')
+            if not link_el:
                 continue
+            href = link_el.get_attribute('href')
+            # Build absolute URL
+            link = href if href.startswith('http') else f"https://www.linkedin.com{href}"
+            title = link_el.inner_text().strip()
 
-            link     = link_el.get_attribute('href').strip()
-            title    = title_el.inner_text().strip()
-            company  = comp_el.inner_text().strip() if comp_el else ''
+            # Company name
+            comp_el = card.query_selector('div.artdeco-entity-lockup__subtitle span')
+            company = comp_el.inner_text().strip() if comp_el else ''
+
+            # Location
+            loc_el = card.query_selector('div.artdeco-entity-lockup__caption span')
             location = loc_el.inner_text().strip() if loc_el else ''
 
             jobs.append({
-                'title':    title,
-                'company':  company,
+                'title': title,
+                'company': company,
                 'location': location,
-                'link':     link
+                'link': link,
             })
 
         print(f"▶ Extracted {len(jobs)} jobs after parsing")
 
-        # Persist updated session state
+        # Persist updated session if cookies file provided
         if cookies_path:
             context.storage_state(path=cookies_path)
         browser.close()
-
         return jobs
+
 
 def save_jobs_to_db(jobs, db_path):
     conn = sqlite3.connect(db_path)
