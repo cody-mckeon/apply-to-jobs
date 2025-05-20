@@ -59,6 +59,11 @@ def fetch_recent_jobs(linkedin_url, cookies_path=None, headless=True):
         cards = page.query_selector_all('li[data-occludable-job-id]')
         print(f"▶ Found {len(cards)} job cards on the page")
 
+        # Debug: print inner HTML of first few cards to inspect DOM
+        for idx, card in enumerate(cards[:3]):
+            html_snippet = card.inner_html()[:500]
+            print(f"▶ Debug Card {idx} HTML snippet (first 500 chars):\n{html_snippet}\n")
+
         jobs = []
         for card in cards:
             link_el  = card.query_selector('a.base-card__full-link')
