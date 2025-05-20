@@ -13,3 +13,20 @@ linkedin_url: "https://www.linkedin.com/jobs/search/?f_TPR=r3600&keywords=data%2
 # (created after your first manual login)
 cookies_path: "config/linkedin_cookies.json"
 
+# Jobs to include (case-insensitive substrings of the title)
+include_keywords:
+  - "data scientist"
+  - "data analyst"
+  - "machine learning"
+
+# Roles to exclude (case-insensitive substrings of the title)
+exclude_keywords:
+  - "senior"
+  - "lead"
+  - "principal"
+  - "manager"
+  - "director"
+  - "ii"
+  - "iii"
+  - "iv"
+
